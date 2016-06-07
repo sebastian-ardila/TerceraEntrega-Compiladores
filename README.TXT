@@ -1,4 +1,5 @@
-Analizador Sintáctico
+Analizador Semantico
+Tercera Entrega
 
 Hecho por:
 
@@ -8,6 +9,7 @@ Alejandro Villegas Ocampo.
 Universidad Tecnológica de Pereira.
 2016.
 
-Jaraquía de clases(directorio src): -Analizador Lexico
+Jaraquía de clases(directorio src): 
+					-Analizador Lexico
 				    -Analizador Sintáctico
-				    -AST
+				    -AST Semantico
