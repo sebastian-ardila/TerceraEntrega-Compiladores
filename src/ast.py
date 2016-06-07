@@ -37,22 +37,63 @@ class Node():
 			#print type(self.listA[0])
 			while(numHijos <= len(self.listA)-1):
 
-				if 'ast.Node' in self.listA[numHijos]:
-					txt += self.listA[numHijos].traducir()
+				#----------------------------------------------------
+				# if 'ast.Node' in self.listA[numHijos]:
+				# 	txt += "[label= "+self.listA[numHijos].traducir()+"]\n\t"
+				#----------------------------------------------------
+				# if self.listA[numHijos].traducir() == type(None):
+				# 	Null(A[numHijos].traducir())
+				# else:
+				# 	txt += "[label= "+self.listA[numHijos].traducir()+"]\n\t"
+				#----------------------------------------------------
+				#txt += "[label= "+self.listA[numHijos].traducir()+"]\n\t"
+				#----------------------------------------------------
+				if type(self.listA[numHijos].traducir()) == type(None):
+					name = self.listA[numHijos].traducir()
+					#txt += "[label= "+name+"]\n\t"
+
+				elif type(self.listA[numHijos].traducir()) == unicode:
+					#txt += "-> "+self.listA.traducir()+"]\n\t"
+					txt += "[label= "+self.name+"]\n\t"
+					#txt += " -> "+self.listA[numHijos].traducir()+"\n\t"
+
+				elif type(self.listA[numHijos].traducir()) == float:
+					#txt += "-> "+self.listA[numHijos].traducir()+"]\n\t"
+					txt += "[label= "+str(self.name)+"]\n\t"
+					#txt += " -> "+self.listA[numHijos].traducir()+"\n\t"
+
+				else:
+					txt += "[label= "+str(self.name)+"]\n\t"
+					#txt += " -> "+self.listA[numHijos].traducir()+"\n\t"
 
 				numHijos = numHijos+1
 
-		elif type(self.listA) == unicode:
-			txt += str(self.name)
-			#print ident + "Nodo: "+ self.name
+		# elif type(self.listA) == unicode:
 
-		elif type(self.listA) == float:
-			txt += str(self.name)
-			#print ident + "Nodo: "+ self.name
+		# 	txt += "-> "+self.listA.traducir()+"\n\t"
+			#----------------------------------------------------
+			#txt += "[label= "+str(self.name)+"]\n\t"
+			#----------------------------------------------------
+			#txt += "-> "+str(self.name)+"]\n\t"
+			#----------------------------------------------------
+			#txt += "[label= "+str(self.listA.traducir())+"]\n\t"
+			#----------------------------------------------------
 
-		else:
-			pass
-			txt += self.listA.traducir()
+		# elif type(self.listA) == float:
+		# 	txt += "-> "+self.listA.traducir()+"\n\t"
+			#----------------------------------------------------
+			#txt += "[label= "+str(self.name)+"]\n\t"
+			#----------------------------------------------------
+			#txt += "-> "+str(self.name)+"]\n\t"
+			#----------------------------------------------------
+			#txt += "[label= "+str(self.listA.traducir())+"]\n\t"
+			#----------------------------------------------------
+
+		# else:
+		# 	pass
+			#txt += self.listA.traducir()
+
+			#----------------------------------------------------
 			#self.listA.imprimirPostOrden()
 			#print ident + "Nodo: "+ self.name
 		# if "program" in self.name:
@@ -60,8 +101,9 @@ class Node():
 		# 	while(numHijos <= len(self.listA)-1):
 		# 		txt += self.listA[numHijos].traducir()
 		# 		numHijos = numHijos+1
+		#----------------------------------------------------
 
-		return txt
+		return "digraph G {\n"+txt+"\n}"
 
 class ID(Node):
 	def __init__(self, name, lineno):
@@ -71,7 +113,8 @@ class ID(Node):
 		print ident + "ID: "+ self.name
 	def traducir(self):
 		global txt
-		txt += self.name
+		txt += "[label= "+self.name+"]\n\t"
+		#txt += "-> "+self.traducir()+"\n\t"
 
 class Numero(Node):
 	def __init__(self, name):
@@ -82,7 +125,7 @@ class Numero(Node):
 
 	def traducir(self):
 		global txt
-		txt += str(int(self.name))
+		txt += "[label= "+str(int(self.name))+"]\n\t"
 
 class Cad(Node):
 	def __init__(self, name):
@@ -93,7 +136,7 @@ class Cad(Node):
 
 	def traducir(self):
 		global txt
-		txt += str(self.name)
+		txt += "[label= "+str(self.name)+"]\n\t"
 
 class True(Node):
 	def __init__(self, name):
@@ -104,7 +147,7 @@ class True(Node):
 
 	def traducir(self):
 		global txt
-		txt += str(self.name)
+		txt += "[label= "+str(self.name)+"]\n\t"
 
 class False(Node):
 	def __init__(self, name):
@@ -115,7 +158,7 @@ class False(Node):
 
 	def traducir(self):
 		global txt
-		txt += str(self.name)
+		txt += "[label= "+str(self.name)+"]\n\t"
 
 class Null(Node):
 	def __init__(self):
@@ -126,7 +169,7 @@ class Null(Node):
 
 	def traducir(self):
 		global txt
-		txt += "nodo null"
+		txt += "[label= "+"nodo null"+"]\n\t"
 		return
 
  
