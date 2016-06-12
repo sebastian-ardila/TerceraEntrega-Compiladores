@@ -7,7 +7,7 @@ import codecs
 import re
 from analizadorlexico import tokens
 from sys import stdin
-from ast import *
+from ast2 import *
 
 ###############################################################################
 #																			  
@@ -59,8 +59,7 @@ precedence = (
 
 def p_program(p):
 	'''program : program classDecl \n'''
-	sons=[p[1],p[2]]
-	p[0] = Node(sons, "program")
+	p[0] = program(p[1],p[2], "program")
 
 	#print "program"
 
@@ -89,8 +88,7 @@ def p_programNull(p):
 
 def p_classDecl(p):
 	'''classDecl : CLASS ID extendsIdOp LKEY listFieldOrMethDecl RKEY'''
-	sons = [ID(p[2],p.lineno(1)), p[3],p[5]]
-	p[0] = Node(sons, "classDecl")
+	p[0] = classDecl(ID(p[2],p.lineno(1)), p[3],p[5], "classDecl")
 	
 	#print "Declaracion de Clase"
 
@@ -104,7 +102,7 @@ def p_classDecl(p):
 
 def p_extendsIdOp(p):
 	'''extendsIdOp : EXTENDS ID'''
-	p[0] = Node(ID(p[2],p.lineno(1)), "extendsIdOp")
+	p[0] = extendsIdOp(ID(p[2],p.lineno(1)), "extendsIdOp")
 
 	#print "Extends ID en Declaracion de Clase"
 
@@ -133,8 +131,7 @@ def p_extendsIdOpNull(p):
 
 def p_listFieldOrMethDecl(p):
 	'''listFieldOrMethDecl : listFieldOrMethDecl fieldOrMethDecl'''
-	sons = [p[1],p[2]]
-	p[0] = Node(sons, "listFieldOrMethDecl")
+	p[0] = listFieldOrMethDecl(p[1], p[2], "listFieldOrMethDecl")
 
 	#print 'lista de declaraciones de Campo o Metodo'
 
@@ -162,7 +159,7 @@ def p_listFieldOrMethDeclNull(p):
 
 def p_fieldOrMethDecl_field(p):
 	'''fieldOrMethDecl : fieldDecl'''
-	p[0] = Node(p[1], "fieldOrMethDecl_field")
+	p[0] = fieldOrMethDecl_field(p[1], "fieldOrMethDecl_field")
 
 	#print 'Declaracion de campo'
 
@@ -176,7 +173,7 @@ def p_fieldOrMethDecl_field(p):
 
 def p_listFieldOrMethDecl_meth(p):
 	'''fieldOrMethDecl : methDecl'''
-	p[0] = Node(p[1], "listFieldOrMethDecl_meth")
+	p[0] = listFieldOrMethDecl_meth(p[1], "listFieldOrMethDecl_meth")
 
 	#print 'Declaracion de metodo'
 
@@ -191,9 +188,8 @@ def p_listFieldOrMethDecl_meth(p):
 
 def p_fieldDecl(p):
 	'''fieldDecl : type ID COMMA ID listId DOTCOMMA'''
-	sons = [p[1],ID(p[2],p.lineno(1)),ID(p[4],p.lineno(1)),p[5]]
 	#name = 
-	p[0] = Node(sons, "fieldDecl "+p[2])
+	p[0] = fieldDecl(p[1],ID(p[2],p.lineno(1)),ID(p[4],p.lineno(1)),p[5], "fieldDecl_"+p[2])
 
 	#print 'componentes de declaracion de campo'
 
@@ -208,8 +204,7 @@ def p_fieldDecl(p):
 
 def p_listId(p):
 	'''listId : COMMA ID listId'''
-	sons = [ID(p[2],p.lineno(1)),p[3]]
-	p[0] = Node(sons, "List ID"+p[2])
+	p[0] = listId(ID(p[2],p.lineno(1)),p[3], "List_ID_"+p[2])
 
 	#print 'lista de identificadores'
 
@@ -238,8 +233,7 @@ def p_listIdNull(p):
 
 def p_methDecl(p):
 	'''methDecl : type ID LPAR formals RPAR block'''
-	sons = [p[1],ID(p[2],p.lineno(1)),p[4],p[6]]
-	p[0] = Node(sons, "Meth Decl"+p[2])
+	p[0] = methDecl(p[1],ID(p[2],p.lineno(1)),p[4],p[6], "Meth_Decl_"+p[2])
 
 	#print 'componentes de declaracion de metodo'
 
@@ -255,17 +249,9 @@ def p_methDecl(p):
 
 def  p_formals(p):
 	'''formals : type ID COMMA type ID listTypeId'''
-	sons = [p[1],ID(p[2],p.lineno(1)),p[4],ID(p[5],p.lineno(1)),p[6]]
-	p[0] = Node(sons, "formals"+p[2])
+	p[0] = formals(p[1],ID(p[2],p.lineno(1)),p[4],ID(p[5],p.lineno(1)),p[6], "formals_"+p[2])
 
 	#print 'formals'
-
-	## if (len(p) == 7):
-	## 	nId = Id(p[2],p.lineno(1))
-	## 	p[0] = formals(p[1], nId, p[4], nId, p[6])
-
-	## elif (len(p) = 2):
-	## 	p[0] = formalsNull()
 
 ###############################################################################
 #	
@@ -292,17 +278,9 @@ def p_formalsNull(p):
 
 def p_listTypeId(p):
 	'''listTypeId : COMMA type ID listTypeId'''
-	sons = [p[2],ID(p[3],p.lineno(1)),p[4]]
-	p[0] = Node(sons, "List Type ID "+p[3])
+	p[0] = listTypeId(p[2],ID(p[3],p.lineno(1)),p[4], "List_Type_ID_"+p[3])
 
 	#print 'lista de tipos'
-
-	## if (len(p) == 5):
-	## 	nId = Id(p[3],p.lineno(1))
-	## 	p[0] = listTypeId(p[2], nId, p[4])
-
-	## elif (len(p) = 2):
-	## 	p[0] = listTypeIdNull()
 
 ###############################################################################
 #	
@@ -327,7 +305,7 @@ def p_listTypeIdNull(p):
 ###############################################################################
 def p_type_INT(p):
 	'''type : INT'''
-	p[0] = Node(p[1], "type INT")
+	p[0] = type_INT(p[1], "type_INT")
 
 	#print 'tipo entero'
 
@@ -341,7 +319,7 @@ def p_type_INT(p):
 
 def p_type_BOOLEAN(p):
 	'''type : BOOLEAN'''
-	p[0] = Node(p[1], "type BOOLEAN")
+	p[0] = type_BOOLEAN(p[1], "type_BOOLEAN")
 
 	#print 'tipo booleano'
 
@@ -355,7 +333,7 @@ def p_type_BOOLEAN(p):
 
 def p_type_STRING(p):
 	'''type : STRING'''
-	p[0] = Node(p[1], "type STRING")
+	p[0] = type_STRING(p[1], "type_STRING")
 
 	#print 'tipo string'
 
@@ -369,8 +347,7 @@ def p_type_STRING(p):
 
 def p_type_type_ID(p):
 	'''type : type ID'''
-	sons = [p[1],ID(p[2],p.lineno(1))]
-	p[0] = Node(sons, "type ID")
+	p[0] = type_type_ID(p[1],ID(p[2],p.lineno(1)), "type_ID")
 
 	#print 'tipo ID'
 
@@ -385,7 +362,7 @@ def p_type_type_ID(p):
 
 def p_type_type_LCOR_RCOR(p):
 	'''type : type LCOR RCOR'''
-	p[0] = Node(p[1], "type []")
+	p[0] = type_type_LCOR_RCOR(p[1], "type_LCOR_RCOR")
 
 	#print 'tipo []'
 
@@ -400,8 +377,7 @@ def p_type_type_LCOR_RCOR(p):
 
 def p_block(p):
 	'''block : LKEY varDecl listVarDecl stmt listStmt RKEY'''
-	sons = [p[2],p[3],p[4],p[5]]
-	p[0] = Node(sons, "block")
+	p[0] = block(p[2],p[3],p[4],p[5], "block")
 
 	#print 'block'
 
@@ -417,16 +393,9 @@ def p_block(p):
 
 def p_listVarDecl(p):
 	'''listVarDecl : listVarDecl varDecl \n'''
-	sons = [p[1],p[2]]
-	p[0] = Node(sons, "list Var Decl")
+	p[0] = listVarDecl(p[1],p[2], "list_Var_Decl")
 
 	#print 'lista de declaraciones de variable'
-
-	## if (len(p) == 3):
-	## 	p[0] = listVarDecl(p[1], p[2])
-
-	## elif (len(p) = 2):
-	## 	p[0] = listVarDeclNull()
 
 ###############################################################################
 #	
@@ -453,16 +422,9 @@ def p_listVarDeclNull(p):
 
 def p_listStmt(p):
 	'''listStmt : listStmt stmt'''
-	sons = [p[1],p[2]]
-	p[0] = Node(sons, "List Stmt")
+	p[0] = listStmt(p[1],p[2], "List_Stmt")
 
 	#print 'lista de statement'
-
-	## if (len(p) == 3):
-	## 	p[0] = listStmt(p[1], p[2])
-
-	## elif (len(p) = 2):
-	## 	p[0] = listStmtNull()
 
 ###############################################################################
 #	
@@ -489,13 +451,9 @@ def p_listStmtNull(p):
 
 def p_varDecl(p):
 	'''varDecl : type ID equalExprOp COMMA ID equalExprOp listIdEqExprOp DOTCOMMA'''
-	sons = [p[1],ID(p[2],p.lineno(1)),p[3],ID(p[5],p.lineno(1)),p[6],p[7]]
-	p[0] = Node(sons, "Var Decl "+p[2])
+	p[0] = varDecl(p[1],ID(p[2],p.lineno(1)),p[3],ID(p[5],p.lineno(1)),p[6],p[7], "Var_Decl "+p[2])
 
 	#print 'declaracion de variable'
-
-	## nId = Id(p[2],p.lineno(1))
-	## p[0] = varDecl(p[1], nId, p[3], nId, p[6], p[7])
 
 ###############################################################################
 #	
@@ -508,15 +466,9 @@ def p_varDecl(p):
 
 def p_equalExprOp(p):
 	'''equalExprOp : IGUAL expr'''
-	p[0] = Node(p[2], "Equal Expr OP")
+	p[0] = equalExprOp(p[2], "Equal_Expr_OP")
 
 	#print 'asignacion de una expresion'
-
-	## if (len(p) == 3):
-	## 	p[0] = equalExprOp(p[1], p[2])
-
-	## elif (len(p) = 2):
-	## 	p[0] = equalExprOpNull()
 
 ###############################################################################
 #	
@@ -543,17 +495,9 @@ def p_equalExprOpNull(p):
 
 def p_listIdEqExprOp(p):
 	'''listIdEqExprOp : listIdEqExprOp COMMA ID equalExprOp '''
-	sons = [p[1],ID(p[3],p.lineno(1)),p[4]]
-	p[0] = Node(sons, "List ID Equal Expr OP")
+	p[0] = listIdEqExprOp(p[1],ID(p[3],p.lineno(1)),p[4], "List_ID_Equal_Expr_OP")
 
 	#print 'lista asignacion de una o mas expresiones'
-
-	## if (len(p) == 5):
-	## 	nId = Id(p[2],p.lineno(1))
-	## 	p[0] = listIdEqExprOp(nId, p[3], p[4])
-
-	## elif (len(p) = 2):
-	## 	p[0] = listIdEqExprOpNull()
 
 ###############################################################################
 #	
@@ -580,39 +524,9 @@ def p_listIdEqExprOpNull(p):
 
 def p_stmt_assign(p):
 	'''stmt : assign DOTCOMMA'''
-	p[0] = Node(p[1], "Stmt Assign")
+	p[0] = stmt_assign(p[1], "Stmt_Assign")
 
 	#print "asignacion stmt"
-
-	## if (len(p) == 3):
-
-	## 	#stmt : assign ';'
-	## 	if (len(p[1]) == 4):
-	## 		p[0] = stmt_assign(p[1])
-
-	## 	#stmt : call ';'
-	## 	if (len(p[1]) == 5):
-	## 		p[0] = stmt_call(p[1])
-
-	## 	#stmt : breakOrContinue ';'
-	## 	if (len(p[1]) == 2):
-	## 		p[0] = stmt_breakOrContinue(p[1])
-
-	## #stmt : RETURN exprOp ';'
-	## elif (len(p) = 4):
-	## 	p[0] = stmt_return(p[2])
-
-	## # stmt : IF LPAR expr RPAR stmt elseStmtOp
-	## elif (len(p) == 7):
-	## 	p[0] = stmt_ifElse(p[3], p[5], p[6])
-
-	## #stmt : WHILE LPAR expr RPAR stmt
-	## elif (len(p) == 6):
-	## 	p[0] = stmt_while(p[3], p[5])
-
-	## #stmt : block
-	## elif (len(p) == 2):
-	## 	p[0] = stmt_block(p[1])
 
 ###############################################################################
 #	
@@ -625,7 +539,7 @@ def p_stmt_assign(p):
 
 def p_stmt_call(p):
 	'''stmt : call DOTCOMMA'''
-	p[0] = Node(p[1], "Stmt Call")
+	p[0] = stmt_call(p[1], "Stmt_Call")
 
 	#print "call stmt"
 
@@ -640,7 +554,7 @@ def p_stmt_call(p):
 
 def p_stmt_RETURN(p):
 	'''stmt : RETURN exprOp DOTCOMMA'''
-	p[0] = Node(p[2], "Stmt Return")
+	p[0] = stmt_RETURN(p[2], "Stmt_Return")
 
 	#print "return stmt"
 
@@ -655,8 +569,7 @@ def p_stmt_RETURN(p):
 
 def p_stmt_IF(p):
 	'''stmt : IF LPAR expr RPAR stmt elseStmtOp'''
-	sons = [p[3],p[5],p[6]]
-	p[0] = Node(sons, "Stmt if")
+	p[0] = stmt_IF(p[3],p[5],p[6], "Stmt_if")
 
 	#print "if stmt"
 
@@ -671,8 +584,7 @@ def p_stmt_IF(p):
 
 def p_stmt_WHILE(p):
 	'''stmt : WHILE LPAR expr RPAR stmt'''
-	sons = [p[3],p[5]]
-	p[0] = Node(sons, "Stmt while")
+	p[0] = stmt_WHILE(p[3],p[5], "Stmt_while")
 
 	#print "while stmt"
 
@@ -687,7 +599,7 @@ def p_stmt_WHILE(p):
 
 def p_stmt_breakOrContinue(p):
 	'''stmt : breakOrContinue DOTCOMMA'''
-	p[0] = Node(p[1], "Stmt [Break|Continue]")
+	p[0] = stmt_breakOrContinue(p[1], "Stmt_Break_or_Continue")
 
 	#print "break|continue"
 
@@ -702,7 +614,7 @@ def p_stmt_breakOrContinue(p):
 
 def p_stmt_block(p):
 	'''stmt : block'''
-	p[0] = Node(p[1], "Stmt Block")
+	p[0] = stmt_block(p[1], "Stmt_Block")
 
 	#print "block stmt"
 
@@ -716,15 +628,9 @@ def p_stmt_block(p):
 
 def p_exprOp(p):
 	'''exprOp : expr'''
-	p[0] = Node(p[1], "Expr OP")
+	p[0] = exprOp(p[1], "Expr_OP")
 
 	#print 'expresion'
-
-	## if (len(p[1]) == 2):
-	## 	#p[0] = exprOp(p[1])
-
-	## elif (len(p[1]) < 2):
-	## 	#p[0] = exprOpNull()
 
 ###############################################################################
 #	
@@ -751,15 +657,9 @@ def p_exprOpNull(p):
 
 def p_elseStmtOpElse(p):
 	'''elseStmtOp : ELSE'''
-	p[0] = Node(p[1], "Else Stmt OP ELSE")
+	p[0] = elseStmtOpElse(p[1], "Else_Stmt_OP_ELSE")
 
 	#print 'else'
-
-	## if (len(p) == 3):
-	## 	#p[0] = elseStmtOp(p[2])
-
-	## elif (len(p) == 2):
-	## 	#p[0] = exprOpNull()
 
 ###############################################################################
 #	
@@ -770,7 +670,7 @@ def p_elseStmtOpElse(p):
 
 def p_elseStmtOpStmt(p):
 	'''elseStmtOp : stmt'''
-	p[0] = Node(p[1], "Else Stmt OP Stmt")
+	p[0] = elseStmtOpStmt(p[1], "Else_Stmt_OP_Stmt")
 
 	#print "stmt"
 
@@ -784,7 +684,7 @@ def p_elseStmtOpStmt(p):
 
 def p_breakOrContinue_Break(p):
 	'''breakOrContinue : BREAK'''
-	p[0] = Node(p[1], " [BREAK|CONTINUE] -> BREAK")
+	p[0] = breakOrContinue_Break(p[1], "BREAK")
 
 	#print 'break'
 
@@ -798,7 +698,7 @@ def p_breakOrContinue_Break(p):
 
 def p_breakOrContinue_Continue(p):
 	'''breakOrContinue : CONTINUE'''
-	p[0] = Node(p[1], " [BREAK|CONTINUE] -> CONTINUE")
+	p[0] = breakOrContinue_Continue(p[1], "CONTINUE")
 
 	#print 'continue'
 
@@ -813,8 +713,7 @@ def p_breakOrContinue_Continue(p):
 
 def p_assign(p):
 	'''assign : location IGUAL expr'''
-	sons = [p[1],p[3]]
-	p[0] = Node(sons, "assign")
+	p[0] = assign(p[1],p[3], "assign")
 
 	#print 'asignacion de una expresion a un location'
 
@@ -828,7 +727,7 @@ def p_assign(p):
 
 def p_location_ID(p):
 	'''location : ID'''
-	p[0] = Node(ID(p[1],p.lineno(1)), "Location ID")
+	p[0] = location_ID(ID(p[1],p.lineno(1)), "Location_ID")
 
 	#print "location id"
 
@@ -843,8 +742,7 @@ def p_location_ID(p):
 
 def p_location_expr_DOT_ID(p):
 	'''location : expr DOT ID'''
-	sons = [p[1],ID(p[3],p.lineno(1))]
-	p[0] = Node(sons, "Location expr.ID")
+	p[0] = location_expr_DOT_ID(p[1],ID(p[3],p.lineno(1)), "Location_expr_DOT_ID")
 
 	#print "location expr.id"
 
@@ -859,8 +757,7 @@ def p_location_expr_DOT_ID(p):
 
 def p_location_expr_LCOR_RCOR(p):
 	'''location : expr LCOR expr RCOR'''
-	sons = [p[1],p[3]]
-	p[0] = Node(sons, "location expr [expr]")
+	p[0] = location_expr_LCOR_RCOR(p[1],p[3], "location_expr_LCOR_expr_RCOR")
 
 	#print "location expr [expr]"
 
@@ -876,8 +773,7 @@ def p_location_expr_LCOR_RCOR(p):
 def p_call(p):
 
 	'''call : method LPAR actuals RPAR'''
-	sons = [p[1],p[3]]
-	p[0] = Node(sons, "call")
+	p[0] = call(p[1],p[3], "call")
 
 	#print 'call'
 
@@ -891,7 +787,7 @@ def p_call(p):
 
 def p_method_ID(p):
 	'''method : ID'''
-	p[0] = Node(ID(p[1],p.lineno(1)), "method ID")
+	p[0] = method_ID(ID(p[1],p.lineno(1)), "method_ID")
 
 	#print 'method ID'
 
@@ -906,8 +802,7 @@ def p_method_ID(p):
 
 def p_method_expr_DOT_ID(p):
 	'''method : expr DOT ID'''
-	sons = [p[1],ID(p[3],p.lineno(1))]
-	p[0] = Node(sons, "method expr.ID")
+	p[0] = method_expr_DOT_ID(p[1],ID(p[3],p.lineno(1)), "method_expr_dot_ID")
 
 	#print 'method expr.ID'
 
@@ -922,14 +817,7 @@ def p_method_expr_DOT_ID(p):
 
 def p_actuals(p):
 	'''actuals : expr COMMA expr listExpr'''
-	sons = [p[1],p[3]]
-	p[0] = Node(sons, "actuals")
-
-	## if (len(p) == 5):
-	## 	p[0] = actuals(p[1], p[3], p[4])
-
-	## elif (len(p) == 2):
-	## 	p[0] = actualsNull()
+	p[0] = actuals(p[1],p[3], "actuals")
 
 	#print 'actuals'
 
@@ -957,16 +845,7 @@ def p_actualsNull(p):
 
 def p_listExpr(p):
 	'''listExpr : COMMA expr listExpr'''
-	sons = [p[2],p[3]]
-	p[0] = Node(sons, "List Expr")
-
-	## if (len(p) == 4):
-	## 	p[0] = listExpr(p[2], p[3])
-
-	## elif (len(p) == 2):
-	## 	p[0] = listExprNull()
-
-	#print 'lista de expresiones'
+	p[0] = listExpr(p[2],p[3], "List_Expr")
 
 ###############################################################################
 #	
@@ -978,7 +857,7 @@ def p_listExpr(p):
 
 def p_listExprNull(p):
 	'''listExpr : empty'''
-	p[0] = Null
+	p[0] = Null()
 
 	#print "listExprNull"
 
@@ -992,15 +871,8 @@ def p_listExprNull(p):
 
 def p_expr(p):
 	'''expr : location'''
-	p[0] = Node(p[1], "expr location")
+	p[0] = expr(p[1], "expr_location")
 	#print "expr LOCATION"
-
-## def p_expr_binary(p):
-
-## 	'''expr : expr binary expr'''
-## 	#'''expr : binary expr'''
-## 	#p[0] = expr_binary(p[1], p[2], p[3])
-## 	#print "expr BINARY"
 
 ###############################################################################
 #	
@@ -1013,8 +885,7 @@ def p_expr(p):
 
 def p_expr_binary_SUM(p):
 	'''expr : expr SUM expr'''
-	sons = [p[1],p[3]]
-	p[0] = Node(sons, "expr sum expr")
+	p[0] = expr_binary_SUM(p[1],p[3], "expr_sum_expr")
 
 	#print "expr + expr"
 
@@ -1029,8 +900,7 @@ def p_expr_binary_SUM(p):
 
 def p_expr_binary_MEN(p):
 	'''expr : expr MEN expr'''
-	sons = [p[1],p[3]]
-	p[0] = Node(sons, "expr men expr")
+	p[0] = expr_binary_MEN(p[1],p[3], "expr_men_expr")
 
 	#print "expr - expr"
 
@@ -1045,8 +915,7 @@ def p_expr_binary_MEN(p):
 
 def p_expr_binary_MULT(p):
 	'''expr : expr MULT expr'''
-	sons = [p[1],p[3]]
-	p[0] = Node(sons, "expr mult expr")
+	p[0] = expr_binary_MULT(p[1],p[3], "expr_mult_expr")
 
 	#print "expr * expr"
 
@@ -1061,8 +930,7 @@ def p_expr_binary_MULT(p):
 
 def p_expr_binary_DIV(p):
 	'''expr : expr DIV expr'''
-	sons = [p[1],p[3]]
-	p[0] = Node(sons, "expr div expr")
+	p[0] = expr_binary_DIV(p[1],p[3], "expr_div_expr")
 
 	#print "expr / expr"
 
@@ -1077,8 +945,7 @@ def p_expr_binary_DIV(p):
 
 def p_expr_binary_MOD(p):
 	'''expr : expr MOD expr'''
-	sons = [p[1],p[3]]
-	p[0] = Node(sons, "expr mod expr")
+	p[0] = expr_binary_MOD(p[1],p[3], "expr_mod_expr")
 
 	#print "expr %  expr"
 
@@ -1093,8 +960,7 @@ def p_expr_binary_MOD(p):
 
 def p_expr_binary_ILOGICO(p):
 	'''expr : expr ILOGICO expr'''
-	sons = [p[1],p[3]]
-	p[0] = Node(sons, "expr and expr")
+	p[0] = expr_binary_ILOGICO(p[1],p[3], "expr_and_expr")
 
 	#print "expr && expr"
 
@@ -1109,8 +975,7 @@ def p_expr_binary_ILOGICO(p):
 
 def p_expr_binary_OLOGICO(p):
 	'''expr : expr OLOGICO expr'''
-	sons = [p[1],p[3]]
-	p[0] = Node(sons, "expr or expr")
+	p[0] = expr_binary_OLOGICO(p[1],p[3], "expr_or_expr")
 
 	#print "expr || expr"
 
@@ -1125,8 +990,7 @@ def p_expr_binary_OLOGICO(p):
 
 def p_expr_binary_MENORQUE(p):
 	'''expr : expr MENORQUE expr'''
-	sons = [p[1],p[3]]
-	p[0] = Node(sons, "expr < expr")
+	p[0] = expr_binary_MENORQUE(p[1],p[3], "expr_MENORQUE_expr")
 
 	#print "expr < expr"
 
@@ -1141,8 +1005,7 @@ def p_expr_binary_MENORQUE(p):
 
 def p_expr_binary_MENORIGUAL(p):
 	'''expr : expr MENORIGUAL expr'''
-	sons = [p[1],p[3]]
-	p[0] = Node(sons, "expr <= expr")
+	p[0] = expr_binary_MENORIGUAL(p[1],p[3], "expr_MENORIGUAL_expr")
 
 	#print "expr <= expr"
 
@@ -1157,8 +1020,7 @@ def p_expr_binary_MENORIGUAL(p):
 
 def p_expr_binary_MAYORQUE(p):
 	'''expr : expr MAYORQUE expr'''
-	sons = [p[1],p[3]]
-	p[0] = Node(sons, "expr > expr")
+	p[0] = expr_binary_MAYORQUE(p[1],p[3], "expr_MAYORQUE_expr")
 
 	#print "expr > expr"
 
@@ -1173,8 +1035,7 @@ def p_expr_binary_MAYORQUE(p):
 
 def p_expr_binary_MAYORIGUAL(p):
 	'''expr : expr MAYORIGUAL expr'''
-	sons = [p[1],p[3]]
-	p[0] = Node(sons, "expr >= expr")
+	p[0] = expr_binary_MAYORIGUAL(p[1],p[3], "expr_MAYORIGUAL_expr")
 
 	#print "expr >= expr"
 
@@ -1189,8 +1050,7 @@ def p_expr_binary_MAYORIGUAL(p):
 
 def p_expr_binary_IGUALIGUAL(p):
 	'''expr : expr IGUALIGUAL expr'''
-	sons = [p[1],p[3]]
-	p[0] = Node(sons, "expr == expr")
+	p[0] = expr_binary_IGUALIGUAL(p[1],p[3], "expr_IGUALIGUAL_expr")
 
 	#print "expr == expr"
 
@@ -1205,8 +1065,7 @@ def p_expr_binary_IGUALIGUAL(p):
 
 def p_expr_binary_DIFERENTE(p):
 	'''expr : expr DIFERENTE expr'''
-	sons = [p[1],p[3]]
-	p[0] = Node(sons, "exr != expr")
+	p[0] = expr_binary_DIFERENTE(p[1],p[3], "exr_DIFERENTE_expr")
 
 	#print "expr != expr"
 
@@ -1220,7 +1079,7 @@ def p_expr_binary_DIFERENTE(p):
 
 def p_expr_call(p):
 	'''expr : call'''
-	p[0] = Node(p[1], "expr call")
+	p[0] = expr_call(p[1], "expr_call")
 
 	#print "expr call"
 
@@ -1234,7 +1093,7 @@ def p_expr_call(p):
 
 def p_expr_this(p):
 	'''expr : THIS'''
-	p[0] = Node(p[1], "expr this")
+	p[0] = expr_this(p[1], "expr_this")
 
 	#print "expr this"
 
@@ -1249,7 +1108,7 @@ def p_expr_this(p):
 
 def p_expr_new_id(p):
 	'''expr : NEW ID LPAR RPAR'''
-	p[0] = Node(ID(p[2],p.lineno(1)), " expr new ID ()")
+	p[0] = expr_new_id(ID(p[2],p.lineno(1)), "expr_new_ID LPAR RPAR")
 
 	#print "expr new ID"
 
@@ -1263,8 +1122,7 @@ def p_expr_new_id(p):
 
 def p_expr_new_type(p):
 	'''expr : NEW type LCOR expr RCOR'''
-	sons = [p[2],p[4]]
-	p[0] = Node(sons)
+	p[0] = expr_new_type(p[2],p[4], "expr_new_type")
 
 	#print "expr new type"
 
@@ -1279,7 +1137,7 @@ def p_expr_new_type(p):
 
 def p_expr_DOT_LENGTH(p):
 	'''expr : expr DOT LENGTH'''
-	p[0] = Node(p[1], "expr.length")
+	p[0] = expr_DOT_LENGTH(p[1], "expr_DOT_length")
 
 	#print "expr.length"
 
@@ -1294,7 +1152,7 @@ def p_expr_DOT_LENGTH(p):
 
 def p_expr_uminus(p):
 	'''expr : UMINUS expr'''
-	p[0] = Node(p[2], "minus expr")
+	p[0] = expr_uminus(p[2], "minus_expr")
 
 	#print "- expr"
 
@@ -1309,7 +1167,7 @@ def p_expr_uminus(p):
 
 def p_expr_negbool(p):
 	'''expr : NEGBOOL expr'''
-	p[0] = Node(p[2], "negbool expr")
+	p[0] = expr_negbool(p[2], "negbool_expr")
 
 	#print "! expr"
 
@@ -1323,7 +1181,7 @@ def p_expr_negbool(p):
 
 def p_expr_literal(p):
 	'''expr : literal'''
-	p[0] = Node(p[1], "expr literal")
+	p[0] = expr_literal(p[1], "expr_literal")
 
 	#print "expr literal"
 
@@ -1338,40 +1196,10 @@ def p_expr_literal(p):
 
 def p_expr_expr(p):
 	'''expr : LPAR expr RPAR'''
-	p[0] = Node(p[2], "(expr)")
+	p[0] = expr_expr(p[2], "(LPAR_expr_RPAR")
 
 	#print "expr (expr)"
 
-#16
-# def p_binary(p):
-
-# 	'''binary : SUM
-# 				| MEN
-# 				| MULT
-# 				| DIV
-# 				| MOD
-# 				| ILOGICO
-# 				| OLOGICO
-# 				| MENORQUE
-# 				| MENORIGUAL
-# 				| MAYORQUE
-# 				| MAYORIGUAL
-# 				| IGUALIGUAL
-# 				| DIFERENTE
-# 	'''
-## 	#p[0] = binary(p[1])
-
-# 	print 'binary'
-
-#17
-# def p_unary(p):
-
-# 	'''unary : UMINUS
-# 				| NEGBOOL
-# 	'''
-## 	#p[0] = unary(p[1])
-
-# 	print 'unary'
 
 
 ###############################################################################
@@ -1387,7 +1215,7 @@ def p_literal_NUMERO(p):
 
 	'''literal : NUMERO'''
 	
-	p[0] = Node(Numero(p[1]), "literal numero")
+	p[0] = literal_CAD(Numero(p[1]), "literal_numero")
 
 	#print "literal"
 
@@ -1404,7 +1232,7 @@ def p_literal_CAD(p):
 
 	'''literal : CAD'''
 	
-	p[0] = Node(Cad(p[1]), "literal cad")
+	p[0] = literal_CAD(Cad(p[1]), "literal_cad")
 
 	#print "literal"
 
@@ -1421,7 +1249,7 @@ def p_literal_TRUE(p):
 
 	'''literal : TRUE'''
 	
-	p[0] = Node(True(p[1]), "literal true")
+	p[0] = literal_TRUE(True(p[1]), "literal_true")
 
 	#print "literal"
 
@@ -1438,7 +1266,7 @@ def p_literal_FALSE(p):
 
 	'''literal : FALSE'''
 	
-	p[0] = Node(False(p[1]), "literal false")
+	p[0] = literal_FALSE(False(p[1]), "literal_false")
 
 	#print "literal"
 
@@ -1455,7 +1283,7 @@ def p_literal_NULL(p):
 
 	'''literal : NULL'''
 	
-	p[0] = Node(p[1], "literal null")
+	p[0] = literal_NULL(p[1], "literal_null")
 
 	#print "literal"
 
@@ -1522,7 +1350,7 @@ print "Por favor, elige la prueba"
 print "Presiona Ctrl+z para salir\n"
 
 
-directorio = "/Users/sebas/Documents/Compiladores/Tercera-Entrega/Analizador Semantico/test/"
+directorio = "/Users/sebas/Documents/Compiladores/Tercera-Entrega/TerceraEntrega Compiladores/test/"
 archivo = buscarFicheros(directorio)
 test = directorio+archivo
 fp = codecs.open(test,"r","utf-8")
@@ -1534,7 +1362,11 @@ yacc.yacc()
 
 raiz = yacc.parse(cadena, debug=1)
 #raiz.imprimirPostOrden(" ")
-print raiz.traducir()
+#print raiz.traducir()
+
+graphFile = open('graphvizthree.vz','w')
+graphFile.write(raiz.traducir())
+graphFile.close
 #raiz.imprimirPostOrden()
 
 #CONSTRUIR EL ANALIZADOR PARSER---------------
